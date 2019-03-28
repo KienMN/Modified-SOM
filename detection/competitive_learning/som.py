@@ -137,7 +137,7 @@ class CombineSomLvq(SOM):
     neighbors = neighbors.reshape(-1 ,1)
     
     # Sign
-    sign = np.ones(self._n_nodes)
+    sign = np.ones((self._n_nodes, 1))
     sign[self._nodes_label == y] = 1
     sign[self._nodes_label == y] = -1 / 3
 
