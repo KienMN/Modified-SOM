@@ -1,7 +1,8 @@
 import numpy as np
 from .base import CompetitiveNetwork
+from .utils import weights_initialize
 
-class TheoriticalLVQ(CompetitiveNetwork):
+class TheoriticalLvq(CompetitiveNetwork):
   """Learning vector quantization"""
   def __init__(self):
     pass
@@ -12,7 +13,7 @@ class TheoriticalLVQ(CompetitiveNetwork):
   def predict(self):
     pass
 
-class NeighborhoodLVQ(CompetitiveNetwork):
+class NeighborhoodLvq(CompetitiveNetwork):
   """Modified version of theoretical LVQ"""
   def __init__(self):
     pass
@@ -22,4 +23,3 @@ class NeighborhoodLVQ(CompetitiveNetwork):
 
   def predict(self, X):
     pass
-
