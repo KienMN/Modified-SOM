@@ -35,8 +35,8 @@ y_train = encoder.fit_transform(y_train)
 from detection.competitive_learning import CombineSomLvq
 model = CombineSomLvq(n_rows = 10, n_cols = 10)
 model.fit(X_train, y_train, weights_init = None, labels_init = None,
-          unsup_num_iters = 100, unsup_batch_size = 10,
-          sup_num_iters = 100, sup_batch_size = 10,
+          unsup_num_iters = 0, unsup_batch_size = 10,
+          sup_num_iters = 50, sup_batch_size = 10,
           neighborhood = "bubble",
           learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
           sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
@@ -64,3 +64,10 @@ true_result = 0
 for i in range (len(cm)):
   true_result += cm[i][i]
 print(true_result / np.sum(cm))
+
+import matplotlib.pyplot as plt
+plt.plot(model._quantization_error)
+plt.xlabel("Number of iterations")
+plt.ylabel("Quantization error")
+plt.title("Quantization error through iterations")
+plt.show()

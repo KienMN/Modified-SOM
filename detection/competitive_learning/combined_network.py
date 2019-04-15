@@ -1,8 +1,8 @@
 import numpy as np
 from .som import SOM
-from .lvq_networks import NeighborhoodLVQ
+from .lvq_networks import NeighborhoodLvq
 
-class SomLvq(SOM, NeighborhoodLVQ):
+class SomLvq(SOM, NeighborhoodLvq):
   def __init__(self):
     pass
 

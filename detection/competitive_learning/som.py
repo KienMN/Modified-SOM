@@ -8,6 +8,7 @@ class SOM(CompetitiveNetwork):
   """Self organizing map"""
   def __init__(self, n_rows, n_cols):
     super().__init__(n_rows, n_cols)
+    self._quantization_error = np.array([])
 
   def find_nearest_node(self, x):
     return np.argmin(np.sum((self._competitive_layer_weights - x) ** 2, axis = 1) + self._bias ** 2)
@@ -30,6 +31,7 @@ class SOM(CompetitiveNetwork):
       x = X[sample_idx]
       n_batchs = i // batch_size
       self.update(x = x, batch = n_batchs)
+      self._quantization_error = np.append(self._quantization_error, self.quantization_error(X))
 
   def update(self, x, batch):
     """Updating competitive layer weights bases on winning node with sample x
@@ -95,13 +97,23 @@ class SOM(CompetitiveNetwork):
       self._sigma_decay_function = sigma_decay_function
     else:
       self._sigma_decay_function = default_sigma_decay_function
-    
-    self.unsup_fitting(X, num_iters, batch_size)
 
+    self.unsup_fitting(X, num_iters, batch_size)
     return self
 
   def predict(self, X):
     pass
+
+  def quantization_error(self, X):
+    """
+    Returns quantization error computed from the average distance of input vectors, x to its best matching unit
+    """
+    if len(X.shape) != 2:
+      raise Exception("Dataset need to be 2 dimensions")
+    error = 0
+    for x in X:
+      error += np.sqrt(np.sum((x - self._competitive_layer_weights[self.find_nearest_node(x)]) ** 2))
+    return error / len(X)
 
 class CombineSomLvq(SOM):
   """Combination of SOM and LVQ"""
@@ -124,6 +136,7 @@ class CombineSomLvq(SOM):
       y_i = y[sample_idx]
       n_batchs = n_trained_batchs + i // batch_size
       self.sup_update(x = x, y = y_i, batch = n_batchs)
+      self._quantization_error = np.append(self._quantization_error, self.quantization_error(X))
 
   def sup_update(self, x, y, batch):
     """Updating competitive layer weights bases on winning node with sample x
@@ -191,6 +204,7 @@ class CombineSomLvq(SOM):
     # Supervised learning phase
     self.label_nodes(X, y, labels_init)
     self.sup_fitting(X, y, sup_num_iters, sup_batch_size, n_trained_batchs = unsup_num_iters // unsup_batch_size)
+    self.label_nodes(X, y, labels_init)
 
   def predict(self, X):
     n_samples = X.shape[0]
