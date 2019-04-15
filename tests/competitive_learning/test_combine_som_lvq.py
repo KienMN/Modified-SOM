@@ -50,9 +50,13 @@ model.fit(X_train, y_train, weights_init = None, labels_init = None,
 
 
 # Predict the result
-y_pred = model.predict(X_test)
+y_pred, confidence_score = model.predict(X_test, confidence_score = True)
 # y_pred = classifier.predict(X_test)
+for i in range (len(y_pred)):
+  print(y_pred[i] == y_test[i], confidence_score[i])
+
 y_pred = encoder.inverse_transform(y_pred)
+
 
 # Making confusion matrix
 from sklearn.metrics import confusion_matrix
@@ -65,9 +69,9 @@ for i in range (len(cm)):
   true_result += cm[i][i]
 print(true_result / np.sum(cm))
 
-import matplotlib.pyplot as plt
-plt.plot(model._quantization_error)
-plt.xlabel("Number of iterations")
-plt.ylabel("Quantization error")
-plt.title("Quantization error through iterations")
-plt.show()
+# import matplotlib.pyplot as plt
+# plt.plot(model._quantization_error)
+# plt.xlabel("Number of iterations")
+# plt.ylabel("Quantization error")
+# plt.title("Quantization error through iterations")
+# plt.show()
