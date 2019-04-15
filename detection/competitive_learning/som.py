@@ -124,7 +124,7 @@ class CombineSomLvq(SOM):
     self._nodes_label = np.zeros(self._n_nodes).astype(np.int8)
     m = 20
     for i in range (self._n_nodes):
-      near_samples_idx = np.argpartition(np.sum((self._competitive_layer_weights[i] - X) ** 2, axis = 1), m)[:m]
+      near_samples_idx = np.argpartition(np.sum((self._competitive_layer_weights[i] - X) ** 2, axis = 1), m - 1)[:m]
       l = np.argmax(np.bincount(y[near_samples_idx]))
       self._nodes_label[i] = l
 
@@ -206,10 +206,35 @@ class CombineSomLvq(SOM):
     self.sup_fitting(X, y, sup_num_iters, sup_batch_size, n_trained_batchs = unsup_num_iters // unsup_batch_size)
     self.label_nodes(X, y, labels_init)
 
-  def predict(self, X):
+  def predict(self, X, confidence_score = False):
     n_samples = X.shape[0]
+    n_labels = np.unique(self._nodes_label).shape[0]
     y_pred = np.zeros(n_samples).astype(np.int8)
-    for i in range (n_samples):
-      winning_node_idx = self.find_nearest_node(X[i])
-      y_pred[i] = self._nodes_label[winning_node_idx]
-    return y_pred
+    score = np.zeros(n_samples)
+
+    if confidence_score:
+      m = min(self._n_nodes, 5)
+      for i in range (n_samples):
+        winning_node_idx = self.find_nearest_node(X[i])
+        y_pred[i] = self._nodes_label[winning_node_idx]
+        square_distances = np.sum((self._competitive_layer_weights - X[i]) ** 2, axis = 1)
+        near_node_idx = np.argpartition(square_distances, m - 1)[:m]
+        total_inverse_distance = 0
+        for j in near_node_idx:
+          if square_distances[j] == 0:
+            if self._nodes_label[j] == y_pred[i]:
+              score[i] = 1
+            else:
+              score[i] = 0
+            total_inverse_distance = 1
+            break
+          if self._nodes_label[j] == y_pred[i]:
+            score[i] += 1 / np.sqrt(square_distances[j])
+          total_inverse_distance += 1 / np.sqrt(square_distances[j])
+        score[i] /= total_inverse_distance
+      return y_pred, score
+    else:
+      for i in range (n_samples):
+        winning_node_idx = self.find_nearest_node(X[i])
+        y_pred[i] = self._nodes_label[winning_node_idx]
+      return y_pred
