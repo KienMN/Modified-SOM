@@ -32,11 +32,11 @@ encoder = LabelEncoder()
 y_train = encoder.fit_transform(y_train)
 
 # Training the LVQ
-from detection.competitive_learning import CombineSomLvq
-model = CombineSomLvq(n_rows = 10, n_cols = 10)
+from detection.ensemble import CombinationSomLvqNetworks
+model = CombinationSomLvqNetworks(n_estimators = 10, size_of_estimator = 3)
 model.fit(X_train, y_train, weights_init = None, labels_init = None,
-          unsup_num_iters = 0, unsup_batch_size = 10,
-          sup_num_iters = 50, sup_batch_size = 10,
+          unsup_num_iters = 25, unsup_batch_size = 10,
+          sup_num_iters = 25, sup_batch_size = 10,
           neighborhood = "bubble",
           learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
           sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
@@ -50,12 +50,11 @@ model.fit(X_train, y_train, weights_init = None, labels_init = None,
 
 
 # Predict the result
-y_pred, confidence_score, distances = model.predict(X_test, confidence_score = True, distance_to_bmu = True)
+y_pred = model.predict(X_test, crit='max-voting-weight')
 # y_pred = classifier.predict(X_test)
-for i in range (len(y_pred)):
-  print(y_pred[i] == y_test[i], confidence_score[i], distances[i])
 
 y_pred = encoder.inverse_transform(y_pred)
+
 
 # Making confusion matrix
 from sklearn.metrics import confusion_matrix
@@ -68,11 +67,9 @@ for i in range (len(cm)):
   true_result += cm[i][i]
 print(true_result / np.sum(cm))
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set()
-plt.plot(model._quantization_error)
-plt.xlabel("Number of iterations")
-plt.ylabel("Quantization error")
-plt.title("Quantization error through iterations")
-plt.show()
+# import matplotlib.pyplot as plt
+# plt.plot(model._quantization_error)
+# plt.xlabel("Number of iterations")
+# plt.ylabel("Quantization error")
+# plt.title("Quantization error through iterations")
+# plt.show()

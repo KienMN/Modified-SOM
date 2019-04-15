@@ -34,7 +34,8 @@ class SOM(CompetitiveNetwork):
       self._quantization_error = np.append(self._quantization_error, self.quantization_error(X))
 
   def update(self, x, batch):
-    """Updating competitive layer weights bases on winning node with sample x
+    """
+    Updating competitive layer weights bases on winning node with sample x
     """
     learning_rate = self._learnining_rate_decay_funtion(self._initial_learnining_rate, self._learnining_decay_rate, batch)
     sigma = self._sigma_decay_function(self._initial_sigma, self._sigma_decay_rate, batch)
@@ -177,7 +178,8 @@ class CombineSomLvq(SOM):
     if weights_init == 'sample' or weights_init == 'pca':
       self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = weights_init)
     else:
-      print('No weights init specified, using random instead')
+      if verbose:
+        print('No weights init specified, using random instead')
       self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = 'random')
 
     self._initial_learnining_rate = learning_rate
@@ -206,18 +208,19 @@ class CombineSomLvq(SOM):
     self.sup_fitting(X, y, sup_num_iters, sup_batch_size, n_trained_batchs = unsup_num_iters // unsup_batch_size)
     self.label_nodes(X, y, labels_init)
 
-  def predict(self, X, confidence_score = False):
+  def predict(self, X, confidence_score = False, distance_to_bmu = False):
     n_samples = X.shape[0]
-    n_labels = np.unique(self._nodes_label).shape[0]
     y_pred = np.zeros(n_samples).astype(np.int8)
     score = np.zeros(n_samples)
+    distances = np.zeros(n_samples)
 
-    if confidence_score:
+    if confidence_score or distance_to_bmu:
       m = min(self._n_nodes, 5)
       for i in range (n_samples):
         winning_node_idx = self.find_nearest_node(X[i])
         y_pred[i] = self._nodes_label[winning_node_idx]
         square_distances = np.sum((self._competitive_layer_weights - X[i]) ** 2, axis = 1)
+        distances[i] = np.sqrt(square_distances[winning_node_idx])
         near_node_idx = np.argpartition(square_distances, m - 1)[:m]
         total_inverse_distance = 0
         for j in near_node_idx:
@@ -232,7 +235,12 @@ class CombineSomLvq(SOM):
             score[i] += 1 / np.sqrt(square_distances[j])
           total_inverse_distance += 1 / np.sqrt(square_distances[j])
         score[i] /= total_inverse_distance
-      return y_pred, score
+      if confidence_score and distance_to_bmu:
+        return y_pred, score, distances
+      elif confidence_score:
+        return y_pred, score
+      elif distance_to_bmu:
+        return y_pred, distances
     else:
       for i in range (n_samples):
         winning_node_idx = self.find_nearest_node(X[i])
