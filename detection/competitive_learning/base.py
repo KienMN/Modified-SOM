@@ -11,6 +11,6 @@ class CompetitiveNetwork(object):
     """Fit model."""
     pass
 
-  def predict(self):
+  def predict(self, X):
     """Predict using fitted model"""
     pass
