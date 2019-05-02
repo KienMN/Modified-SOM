@@ -505,7 +505,7 @@ class CombineSomLvq(SOM):
     Parameters
     ----------
     X : 2D numpy array, shape (n_samples, n_features)
-      Training vectors, where n_samples is the number of samples and n_features is the number of features.
+      Input vectors, where n_samples is the number of samples and n_features is the number of features.
 
     confidence_score : boolean, default: False
       Return confidence score of not.
@@ -516,7 +516,7 @@ class CombineSomLvq(SOM):
     Returns
     -------
     y_pred : 1D numpy array, shape (n_samples,)
-      Training label vector, where n_samples in the number of samples.
+      Predicted label vector, where n_samples in the number of samples.
 
     score : 1D numpy array, shape (n_samples,)
       Confidence score corresponding to the prediction.
