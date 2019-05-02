@@ -1,14 +1,13 @@
-# Testing combine som and lvq model
+# Testing combination of som-lvq models
 
-# Adding path to libraries
-import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+# Importing the context
+import context
 
 # Importing the libraries
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import unittest
 
 # Importing the dataset
 from detection.dataset import load_dataset
@@ -33,43 +32,75 @@ y_train = encoder.fit_transform(y_train)
 
 # Training the LVQ
 from detection.ensemble import CombinationSomLvqNetworks
-model = CombinationSomLvqNetworks(n_estimators = 10, size_of_estimator = 3)
-model.fit(X_train, y_train, weights_init = None, labels_init = None,
-          unsup_num_iters = 25, unsup_batch_size = 10,
-          sup_num_iters = 25, sup_batch_size = 10,
-          neighborhood = "bubble",
-          learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
-          sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
-          conscience = False, verbose = 0)
+from detection.ensemble import DistributionSomLvqNetworks
 
-# from sklearn.ensemble import RandomForestClassifier
-# from sklearn.naive_bayes import GaussianNB
-# from sklearn.neighbors import KNeighborsClassifier
-# classifier = KNeighborsClassifier(20)
-# classifier.fit(X_train, y_train)
+class TestCombinationSomLvqNetworks(unittest.TestCase):
+  def test_creating(self):
+    n_estimators = 10
+    model = CombinationSomLvqNetworks(n_estimators = n_estimators, size_of_estimator = 3)
+    self.assertEqual(len(model._models), n_estimators)
+  
+  def test_training(self):
+    n_estimators = 10
+    size = 3
+    model = CombinationSomLvqNetworks(n_estimators = n_estimators, size_of_estimator = size)
+    model.fit(X_train, y_train, weights_init = None, labels_init = None,
+              unsup_num_iters = 10, unsup_batch_size = 10,
+              sup_num_iters = 10, sup_batch_size = 10,
+              neighborhood = "bubble",
+              learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+              sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
+              conscience = False, verbose = 0)
+    self.assertEqual(model._models[0]._competitive_layer_weights.shape, (size * size, X_train.shape[1]))
 
+  def test_predicting(self):
+    n_estimators = 10
+    size = 3
+    model = CombinationSomLvqNetworks(n_estimators = n_estimators, size_of_estimator = size)
+    model.fit(X_train, y_train, subset_size = 0.25, weights_init = None, labels_init = None,
+              unsup_num_iters = 10, unsup_batch_size = 10,
+              sup_num_iters = 10, sup_batch_size = 10,
+              neighborhood = "bubble",
+              learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+              sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
+              conscience = False, verbose = 0)
+    y_pred = model.predict(X_test, crit = 'max-voting-weight')
+    y_pred = encoder.inverse_transform(y_pred)
+    self.assertEqual(y_pred.shape, y_test.shape)
 
-# Predict the result
-y_pred = model.predict(X_test, crit='max-voting-weight')
-# y_pred = classifier.predict(X_test)
+class TestDistributionSomLvqNetworks(unittest.TestCase):
+  def test_creating(self):
+    n_estimators = 10
+    model = DistributionSomLvqNetworks(n_estimators = n_estimators, size_of_estimator = 3)
+    self.assertEqual(len(model._models), n_estimators)
+  
+  def test_training(self):
+    n_estimators = 10
+    size = 3
+    model = DistributionSomLvqNetworks(n_estimators = n_estimators, size_of_estimator = size)
+    model.fit(X_train, y_train, features_selection = 'weights', weights_init = None, labels_init = None,
+              unsup_num_iters = 10, unsup_batch_size = 10,
+              sup_num_iters = 10, sup_batch_size = 10,
+              neighborhood = "bubble",
+              learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+              sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
+              conscience = False, verbose = 0)
+    self.assertEqual(model._models[0]._competitive_layer_weights.shape, (size * size, len(model._features_set[0])))
 
-y_pred = encoder.inverse_transform(y_pred)
+  def test_predicting(self):
+    n_estimators = 10
+    size = 3
+    model = DistributionSomLvqNetworks(n_estimators = n_estimators, size_of_estimator = size)
+    model.fit(X_train, y_train, features_selection = 'weights', weights_init = None, labels_init = None,
+              unsup_num_iters = 10, unsup_batch_size = 10,
+              sup_num_iters = 10, sup_batch_size = 10,
+              neighborhood = "bubble",
+              learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+              sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
+              conscience = False, verbose = 0)
+    y_pred = model.predict(X_test, crit = 'max-voting-weight')
+    y_pred = encoder.inverse_transform(y_pred)
+    self.assertEqual(y_pred.shape, y_test.shape)
 
-
-# Making confusion matrix
-from sklearn.metrics import confusion_matrix
-cm = confusion_matrix(y_test, y_pred)
-
-# Printing the confusion matrix
-print(cm)
-true_result = 0
-for i in range (len(cm)):
-  true_result += cm[i][i]
-print(true_result / np.sum(cm))
-
-# import matplotlib.pyplot as plt
-# plt.plot(model._quantization_error)
-# plt.xlabel("Number of iterations")
-# plt.ylabel("Quantization error")
-# plt.title("Quantization error through iterations")
-# plt.show()
+if __name__ == '__main__':
+  unittest.main()

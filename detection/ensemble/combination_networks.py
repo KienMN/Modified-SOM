@@ -130,7 +130,7 @@ class CombinationSomLvqNetworks(CombinationNetworksBase):
     y_pred : 1D numpy array, shape (n_samples,)
       Predicted label vector, where n_samples in the number of samples.
     """
-    print(crit)
+    # print(crit)
     n_samples = X.shape[0]
     y_pred_set = np.zeros((n_samples, self._n_estimators)).astype(np.int8)
     distances_set = np.zeros((n_samples, self._n_estimators))
@@ -265,7 +265,7 @@ class DistributionSomLvqNetworks(CombinationNetworksBase):
     n_samples = X.shape[0]
     n_features = X.shape[1]
     
-    for _ in self._n_estimators:
+    for _ in range(self._n_estimators):
       if features_selection == 'random':
         subset_features = np.random.randint(0, n_features, np.random.randint(1, n_features + 1))
         subset_features = np.unique(subset_features)
@@ -277,16 +277,15 @@ class DistributionSomLvqNetworks(CombinationNetworksBase):
         raise ValueError('features_selection should be random or weights')
       self._features_set.append(subset_features)
     
-    for model in self._models:
-      
+    for i, model in enumerate(self._models):
+      if verbose:
+        print('Model {}/{}:'.format(i + 1, self._n_estimators))
       if subset_size != 1:
         subset_idx = np.random.randint(0, n_samples, int(subset_size * n_samples)).tolist()
       else:
         subset_idx = np.arange(n_samples)
-
-      X_subset = X[subset_idx][:, subset_features]
-      y_subset = y[subset_idx][:, subset_features]
-      print(X_subset.shape)
+      X_subset = X[subset_idx, :][:, self._features_set[i]]
+      y_subset = y[subset_idx]
       model.fit(X_subset, y_subset, weights_init = weights_init, labels_init = labels_init,
                 unsup_num_iters = unsup_num_iters, unsup_batch_size = unsup_batch_size,
                 sup_num_iters = sup_batch_size, sup_batch_size = sup_batch_size,
@@ -312,7 +311,7 @@ class DistributionSomLvqNetworks(CombinationNetworksBase):
     y_pred : 1D numpy array, shape (n_samples,)
       Predicted label vector, where n_samples in the number of samples.
     """
-    print(crit)
+    # print(crit)
     n_samples = X.shape[0]
     y_pred_set = np.zeros((n_samples, self._n_estimators)).astype(np.int8)
     distances_set = np.zeros((n_samples, self._n_estimators))
