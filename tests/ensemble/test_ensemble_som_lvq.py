@@ -48,7 +48,7 @@ class TestCombinationSomLvqNetworks(unittest.TestCase):
               unsup_num_iters = 10, unsup_batch_size = 10,
               sup_num_iters = 10, sup_batch_size = 10,
               neighborhood = "bubble",
-              learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+              learning_rate = 0.5, learning_decay_rate = 1, learning_rate_decay_function = None,
               sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
               conscience = False, verbose = 0)
     self.assertEqual(model._models[0]._competitive_layer_weights.shape, (size * size, X_train.shape[1]))
@@ -61,7 +61,7 @@ class TestCombinationSomLvqNetworks(unittest.TestCase):
               unsup_num_iters = 10, unsup_batch_size = 10,
               sup_num_iters = 10, sup_batch_size = 10,
               neighborhood = "bubble",
-              learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+              learning_rate = 0.5, learning_decay_rate = 1, learning_rate_decay_function = None,
               sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
               conscience = False, verbose = 0)
     y_pred = model.predict(X_test, crit = 'max-voting-weight')
@@ -82,7 +82,7 @@ class TestDistributionSomLvqNetworks(unittest.TestCase):
               unsup_num_iters = 10, unsup_batch_size = 10,
               sup_num_iters = 10, sup_batch_size = 10,
               neighborhood = "bubble",
-              learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+              learning_rate = 0.5, learning_decay_rate = 1, learning_rate_decay_function = None,
               sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
               conscience = False, verbose = 0)
     self.assertEqual(model._models[0]._competitive_layer_weights.shape, (size * size, len(model._features_set[0])))
@@ -95,7 +95,7 @@ class TestDistributionSomLvqNetworks(unittest.TestCase):
               unsup_num_iters = 10, unsup_batch_size = 10,
               sup_num_iters = 10, sup_batch_size = 10,
               neighborhood = "bubble",
-              learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+              learning_rate = 0.5, learning_decay_rate = 1, learning_rate_decay_function = None,
               sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
               conscience = False, verbose = 0)
     y_pred = model.predict(X_test, crit = 'max-voting-weight')

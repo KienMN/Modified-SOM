@@ -121,7 +121,7 @@ class SOM(CompetitiveNetwork):
       Return self.
     """
     # Computing the learning rate and sigma for current batch.
-    learning_rate = self._learnining_rate_decay_funtion(self._initial_learnining_rate, self._learnining_decay_rate, batch)
+    learning_rate = self._learning_rate_decay_funtion(self._initial_learning_rate, self._learning_decay_rate, batch)
     sigma = self._sigma_decay_function(self._initial_sigma, self._sigma_decay_rate, batch)
     
     # Determining the winning node and neighborhood coefficients.
@@ -141,7 +141,7 @@ class SOM(CompetitiveNetwork):
       self._bias[winning_node_idx + 1:] *= 0.9
     
   def fit(self, X, weights_init = 'random', num_iters = 100, batch_size = 32, neighborhood = "bubble",
-          learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+          learning_rate = 0.5, learning_decay_rate = 1, learning_rate_decay_function = None,
           sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
           conscience = False, verbose = False):
     """Fit the model according to the input data.
@@ -204,8 +204,8 @@ class SOM(CompetitiveNetwork):
         print('No weights init specified, using random initialization instead.')
       self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = 'random')  
     
-    self._initial_learnining_rate = learning_rate
-    self._learnining_decay_rate = learnining_decay_rate
+    self._initial_learning_rate = learning_rate
+    self._learning_decay_rate = learning_decay_rate
     self._initial_sigma = sigma
     self._sigma_decay_rate = sigma_decay_rate
     self._conscience = conscience
@@ -214,9 +214,9 @@ class SOM(CompetitiveNetwork):
     self._verbose = verbose
 
     if learning_rate_decay_function:
-      self._learnining_rate_decay_funtion = learning_rate_decay_function
+      self._learning_rate_decay_funtion = learning_rate_decay_function
     else:
-      self._learnining_rate_decay_funtion = default_learning_rate_decay_function
+      self._learning_rate_decay_funtion = default_learning_rate_decay_function
 
     if sigma_decay_function:
       self._sigma_decay_function = sigma_decay_function
@@ -366,7 +366,7 @@ class CombineSomLvq(SOM):
       Return self.
     """
     # Computing the learning rate and sigma for current batch.
-    learning_rate = self._learnining_rate_decay_funtion(self._initial_learnining_rate, self._learnining_decay_rate, batch)
+    learning_rate = self._learning_rate_decay_funtion(self._initial_learning_rate, self._learning_decay_rate, batch)
     sigma = self._sigma_decay_function(self._initial_sigma, self._sigma_decay_rate, batch)
     
     # Determining the winning node and neighborhood coefficients.
@@ -394,7 +394,7 @@ class CombineSomLvq(SOM):
           unsup_num_iters = 100, unsup_batch_size = 32,
           sup_num_iters = 100, sup_batch_size = 32,
           neighborhood = "bubble",
-          learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+          learning_rate = 0.5, learning_decay_rate = 1, learning_rate_decay_function = None,
           sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
           conscience = False, verbose = False):
     """Fit the model according to the input data.
@@ -472,9 +472,9 @@ class CombineSomLvq(SOM):
         print('No weights init specified, using random initialization instead.')
       self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = 'random')
 
-    self._initial_learnining_rate = learning_rate
+    self._initial_learning_rate = learning_rate
     self._initial_sigma = sigma
-    self._learnining_decay_rate = learnining_decay_rate
+    self._learning_decay_rate = learning_decay_rate
     self._sigma_decay_rate = sigma_decay_rate
     self._conscience = conscience
     self._bias = np.zeros(self._n_nodes)
@@ -482,9 +482,9 @@ class CombineSomLvq(SOM):
     self._verbose = verbose
     
     if learning_rate_decay_function:
-      self._learnining_rate_decay_funtion = learning_rate_decay_function
+      self._learning_rate_decay_funtion = learning_rate_decay_function
     else:
-      self._learnining_rate_decay_funtion = default_learning_rate_decay_function
+      self._learning_rate_decay_funtion = default_learning_rate_decay_function
 
     if sigma_decay_function:
       self._sigma_decay_function = sigma_decay_function

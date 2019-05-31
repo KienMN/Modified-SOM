@@ -29,7 +29,7 @@ class CombinationSomLvqNetworks(CombinationNetworksBase):
           unsup_num_iters = 100, unsup_batch_size = 32,
           sup_num_iters = 100, sup_batch_size = 32,
           neighborhood = "bubble",
-          learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+          learning_rate = 0.5, learning_decay_rate = 1, learning_rate_decay_function = None,
           sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
           conscience = False, verbose = 0):
     """Fit the models according to the input data.
@@ -108,7 +108,7 @@ class CombinationSomLvqNetworks(CombinationNetworksBase):
                 unsup_num_iters = unsup_num_iters, unsup_batch_size = unsup_batch_size,
                 sup_num_iters = sup_batch_size, sup_batch_size = sup_batch_size,
                 neighborhood = neighborhood,
-                learning_rate = learning_rate, learnining_decay_rate = learnining_decay_rate,
+                learning_rate = learning_rate, learning_decay_rate = learning_decay_rate,
                 learning_rate_decay_function = learning_rate_decay_function,
                 sigma = sigma, sigma_decay_rate = sigma_decay_rate, sigma_decay_function = sigma_decay_function,
                 conscience = conscience, verbose = verbose)
@@ -190,7 +190,7 @@ class DistributionSomLvqNetworks(CombinationNetworksBase):
           unsup_num_iters = 100, unsup_batch_size = 32,
           sup_num_iters = 100, sup_batch_size = 32,
           neighborhood = "bubble",
-          learning_rate = 0.5, learnining_decay_rate = 1, learning_rate_decay_function = None,
+          learning_rate = 0.5, learning_decay_rate = 1, learning_rate_decay_function = None,
           sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
           conscience = False, verbose = 0):
     """Fit the models according to the input data.
@@ -290,7 +290,7 @@ class DistributionSomLvqNetworks(CombinationNetworksBase):
                 unsup_num_iters = unsup_num_iters, unsup_batch_size = unsup_batch_size,
                 sup_num_iters = sup_batch_size, sup_batch_size = sup_batch_size,
                 neighborhood = neighborhood,
-                learning_rate = learning_rate, learnining_decay_rate = learnining_decay_rate,
+                learning_rate = learning_rate, learning_decay_rate = learning_decay_rate,
                 learning_rate_decay_function = learning_rate_decay_function,
                 sigma = sigma, sigma_decay_rate = sigma_decay_rate, sigma_decay_function = sigma_decay_function,
                 conscience = conscience, verbose = verbose)
