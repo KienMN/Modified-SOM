@@ -14,5 +14,6 @@ setup(
   author_email="kienmn97@gmail.com",
   license="MIT",
   packages=find_packages(exclude=["docs","tests", ".gitignore"]),
-  install_requires=["numpy", "pandas", "scikit-learn"]
+  install_requires=["numpy", "pandas", "scikit-learn"],
+  include_package_data=True
 )
