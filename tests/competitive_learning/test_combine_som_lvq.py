@@ -57,7 +57,7 @@ class TestCombineSomLvq(unittest.TestCase):
               conscience = False, verbose = False)
     y_pred = model.predict(X_test, confidence_score = False, distance_to_bmu = False)
     y_pred = encoder.inverse_transform(y_pred)
-    cm = confusion_matrix(y_test, y_pred)
+    confusion_matrix(y_test, y_pred)
     self.assertEqual(y_pred.shape, y_test.shape)
 
 if __name__ == '__main__':

@@ -15,5 +15,6 @@ setup(
   license="MIT",
   packages=find_packages(exclude=["docs","tests", ".gitignore"]),
   install_requires=["numpy", "pandas", "scikit-learn"],
+  dependency_links=[""],
   include_package_data=True
 )
