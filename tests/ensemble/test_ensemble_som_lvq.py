@@ -78,7 +78,7 @@ class TestDistributionSomLvqNetworks(unittest.TestCase):
     n_estimators = 10
     size = 3
     model = DistributionSomLvqNetworks(n_estimators = n_estimators, size_of_estimator = size)
-    model.fit(X_train, y_train, features_selection = 'weights', weights_init = None, labels_init = None,
+    model.fit(X_train, y_train, features_selection = [1, 1, 1, 0.5, 0.5, 0.5], weights_init = None, labels_init = None,
               unsup_num_iters = 10, unsup_batch_size = 10,
               sup_num_iters = 10, sup_batch_size = 10,
               neighborhood = "bubble",

@@ -203,8 +203,8 @@ class DistributionSomLvqNetworks(CombinationNetworksBase):
     y : 1D numpy array, shape (n_samples,)
       Training label vector, where n_samples in the number of samples.
 
-    features_selection : str, options: ['random', 'weights']
-      Options to select features.
+    features_selection : str, options: ['random', 'weights'] or list
+      Options to select features or a list of weights of each features.
 
     subset_size : float, default: 0.25
       Size of subset according to size of the dataset.
@@ -265,17 +265,24 @@ class DistributionSomLvqNetworks(CombinationNetworksBase):
     n_samples = X.shape[0]
     n_features = X.shape[1]
     
-    for _ in range(self._n_estimators):
-      if features_selection == 'random':
+    if features_selection == 'random':
+      for _ in range(self._n_estimators):
         subset_features = np.random.randint(0, n_features, np.random.randint(1, n_features + 1))
         subset_features = np.unique(subset_features)
-      elif features_selection == 'weights':
-        corr_coef = np.corrcoef(np.append(X, y.reshape((-1, 1)), axis = 1).T)[-1, :-1]
-        weights = np.abs(corr_coef.copy())
+        self._features_set.append(subset_features)
+    elif features_selection == 'weights':
+      corr_coef = np.corrcoef(np.append(X, y.reshape((-1, 1)), axis = 1).T)[-1, :-1]
+      weights = np.abs(corr_coef.copy())
+      for _ in range(self._n_estimators):  
         subset_features = np.unique(weighted_sampling(weights, n_features))
-      else:
-        raise ValueError('features_selection should be random or weights')
-      self._features_set.append(subset_features)
+        self._features_set.append(subset_features)
+    elif type(features_selection) == list and n_features == len(features_selection):
+      weights = np.abs(np.array(features_selection))
+      for _ in range(self._n_estimators):
+        subset_features = np.unique(weighted_sampling(weights, n_features))
+        self._features_set.append(subset_features)
+    else:
+      raise ValueError('features_selection should be random or weights or a list which length is equal to number of features')
     
     for i, model in enumerate(self._models):
       if verbose:
