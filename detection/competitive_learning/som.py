@@ -439,20 +439,20 @@ class CombineSomLvq(SOM):
     neighborhood : str, options: ['bubble', 'gaussian']
       Neighborhood function that is used to compute neighborhood coefficients.
 
-    learning_rate : float, default: 0.5
-      The learning rate that is used during training process.
+    learning_rate : float, default: 0.5 or None
+      The learning rate that is used during training process. If value is None, model uses the value of previous training.
 
-    learning_decay_rate : float, default: 1
-      The rate that is used to decrease the learning rate after each batches.
+    learning_decay_rate : float, default: 1 or None
+      The rate that is used to decrease the learning rate after each batches. If value is None, model uses the value of previous training.
 
     learning_rate_decay_function : function, default: None
       The function that is used to decrease the learning rate after each batches.
 
-    sigma : float, default: 1
-      The radius that is used to compute neighborhood coefficients.
+    sigma : float, default: 1 or None
+      The radius that is used to compute neighborhood coefficients. If value is None, model uses the value of previous training.
 
-    sigma_decay_rate : float, default: 1
-      The rate that is used to decrease the sigma after each batches.
+    sigma_decay_rate : float, default: 1 or None
+      The rate that is used to decrease the sigma after each batches. If value is None, model uses the value of previous training.
 
     sigma_decay_function : function, default: None
       The function that is used to decrease the sigma after each batches.
