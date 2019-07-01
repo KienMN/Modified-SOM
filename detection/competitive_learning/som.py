@@ -30,6 +30,8 @@ class SOM(CompetitiveNetwork):
 
   def __init__(self, n_rows, n_cols):
     super().__init__(n_rows, n_cols)
+    self._competitive_layer_weights = None
+    self._n_batches = 0
     self._quantization_error = np.array([])
 
   def find_nearest_node(self, x):
@@ -97,11 +99,12 @@ class SOM(CompetitiveNetwork):
     for i in range(num_iters):
       sample_idx = np.random.randint(0, n_samples)
       x = X[sample_idx]
-      n_batches = i // batch_size
+      n_batches = self._n_batches + i // batch_size
       self.update(x = x, batch = n_batches)
       self._quantization_error = np.append(self._quantization_error, self.quantization_error(X))
       if verbose:
         print('Unsupervised learning iteration {}/{}: quantization error: {:.4f}'.format(i + 1, num_iters, self._quantization_error[-1]))
+    self._n_batches += num_iters // batch_size + int(num_iters % batch_size != 0)
     return self
 
   def update(self, x, batch):
@@ -195,14 +198,15 @@ class SOM(CompetitiveNetwork):
     if len(X.shape) != 2:
       raise Exception("Dataset need to be 2 dimensions")
 
-    if weights_init in ['random','sample', 'pca']:
-      if verbose:
-        print('Using {} initialization for neurons\' weights.'.format(weights_init))
-      self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = weights_init)
-    else:
-      if verbose:
-        print('No weights init specified, using random initialization instead.')
-      self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = 'random')  
+    if self._competitive_layer_weights is None:
+      if weights_init in ['random','sample', 'pca']:
+        if verbose:
+          print('Using {} initialization for neurons\' weights.'.format(weights_init))
+        self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = weights_init)
+      else:
+        if verbose:
+          print('No weights init specified, using random initialization instead.')
+        self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = 'random')  
     
     self._initial_learning_rate = learning_rate
     self._learning_decay_rate = learning_decay_rate
@@ -280,6 +284,10 @@ class CombineSomLvq(SOM):
 
   def __init__(self, n_rows, n_cols):
     super().__init__(n_rows, n_cols)
+    self._initial_learning_rate = None
+    self._initial_sigma = None
+    self._learning_decay_rate = None
+    self._sigma_decay_rate = None
 
   def label_nodes(self, X, y, labels_init = None):
     """Label the neurons according to the input data and current weights of the neurons.
@@ -308,7 +316,7 @@ class CombineSomLvq(SOM):
       l = np.argmax(np.bincount(y[near_samples_idx]))
       self._nodes_label[i] = l
 
-  def sup_fitting(self, X, y, num_iters, batch_size, n_trained_batches):
+  def sup_fitting(self, X, y, num_iters, batch_size):
     """Fit the model according to the given training data in the supervised learning phase.
 
     Parameters
@@ -339,11 +347,12 @@ class CombineSomLvq(SOM):
       sample_idx = np.random.randint(0, n_samples)
       x = X[sample_idx]
       y_i = y[sample_idx]
-      n_batches = n_trained_batches + i // batch_size
+      n_batches = self._n_batches + i // batch_size
       self.sup_update(x = x, y = y_i, batch = n_batches)
       self._quantization_error = np.append(self._quantization_error, self.quantization_error(X))
       if verbose:
         print('Supervised learning iteration {}/{}: quantization error: {:.4f}'.format(i + 1, num_iters, self._quantization_error[-1]))
+    self._n_batches += num_iters // batch_size + int(num_iters % batch_size != 0)
     return self
 
   def sup_update(self, x, y, batch):
@@ -462,20 +471,45 @@ class CombineSomLvq(SOM):
 
     if len(X.shape) != 2:
       raise Exception("Dataset need to be 2 dimensions")
-      
-    if weights_init in ['random','sample', 'pca']:
-      if verbose:
-        print('Using {} initialization for neurons\' weights.'.format(weights_init))
-      self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = weights_init)
-    else:
-      if verbose:
-        print('No weights init specified, using random initialization instead.')
-      self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = 'random')
+    
+    if self._competitive_layer_weights is None:
+      if weights_init in ['random','sample', 'pca']:
+        if verbose:
+          print('Using {} initialization for neurons\' weights.'.format(weights_init))
+        self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = weights_init)
+      else:
+        if verbose:
+          print('No weights init specified, using random initialization instead.')
+        self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = 'random')
 
-    self._initial_learning_rate = learning_rate
-    self._initial_sigma = sigma
-    self._learning_decay_rate = learning_decay_rate
-    self._sigma_decay_rate = sigma_decay_rate
+    if learning_rate is not None:
+      self._initial_learning_rate = learning_rate
+      self._n_batches = 0
+    else:
+      if self._initial_learning_rate is None:
+        raise Exception('Learning rate need defining before fitting')
+    
+    if sigma is not None:
+      self._initial_sigma = sigma
+      self._n_batches = 0
+    else:
+      if self._initial_sigma is None:
+        raise Exception('Sigma need defining before fitting')
+    
+    if learning_decay_rate is not None:
+      self._learning_decay_rate = learning_decay_rate
+      self._n_batches = 0
+    else:
+      if self._learning_decay_rate is None:
+        raise Exception('Learning decay rate need defining before fitting')
+
+    if sigma_decay_rate is not None:
+      self._sigma_decay_rate = sigma_decay_rate
+      self._n_batches = 0
+    else:
+      if self._sigma_decay_rate is None:
+        raise Exception('Sigma decay rate need defining before fitting')
+    
     self._conscience = conscience
     self._bias = np.zeros(self._n_nodes)
     self._neighborhood = neighborhood
@@ -496,7 +530,7 @@ class CombineSomLvq(SOM):
 
     # Supervised learning phase
     self.label_nodes(X, y, labels_init)
-    self.sup_fitting(X, y, sup_num_iters, sup_batch_size, n_trained_batches = unsup_num_iters // unsup_batch_size)
+    self.sup_fitting(X, y, sup_num_iters, sup_batch_size)
     self.label_nodes(X, y, labels_init)
 
   def predict(self, X, confidence_score = False, distance_to_bmu = False):
@@ -524,6 +558,8 @@ class CombineSomLvq(SOM):
     distance : 1D numpy array, shape (n_samples,)
       Distance of each input vectors to its corresponding BMU.
     """
+    if self._competitive_layer_weights is None:
+      raise Exception('Model has not been fitted yet!')
 
     n_samples = X.shape[0]
     y_pred = np.zeros(n_samples).astype(np.int8)
