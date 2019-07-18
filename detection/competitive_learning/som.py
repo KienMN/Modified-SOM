@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.cluster import k_means
 from .base import CompetitiveNetwork
 from .utils import default_learning_rate_decay_function
 from .utils import default_sigma_decay_function
@@ -143,10 +144,11 @@ class SOM(CompetitiveNetwork):
       self._bias[winning_node_idx] += 0.1
       self._bias[winning_node_idx + 1:] *= 0.9
     
-  def fit(self, X, weights_init = 'random', num_iters = 100, batch_size = 32, neighborhood = "bubble",
-          learning_rate = 0.5, learning_decay_rate = 1, learning_rate_decay_function = None,
-          sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
-          conscience = False, verbose = False):
+  def fit(self, X, weights_init = 'random', num_iters = 100, batch_size = 32, 
+          neighborhood = "bubble", learning_rate = 0.5, learning_decay_rate = 1, 
+          learning_rate_decay_function = None, sigma = 1, sigma_decay_rate = 1, 
+          sigma_decay_function = None, conscience = False, num_clusters = 0,
+          verbose = False):
     """Fit the model according to the input data.
     
     Parameters
@@ -228,11 +230,18 @@ class SOM(CompetitiveNetwork):
       self._sigma_decay_function = default_sigma_decay_function
 
     self.unsup_fitting(X, num_iters, batch_size)
+
+    if num_clusters != 0:
+      _, self.cluster_label, _ = k_means(self._competitive_layer_weights, 
+                                           n_clusters=num_clusters, 
+                                           verbose=verbose)
+
     return self
 
   def predict(self, X):
-    """Unsupervised learning model has no predict method."""
-    pass
+    pred = np.array([self.cluster_label[self.find_nearest_node(x)] for x in X])
+
+    return pred
 
   def quantization_error(self, X):
     """
