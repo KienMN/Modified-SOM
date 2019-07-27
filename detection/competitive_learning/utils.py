@@ -43,7 +43,7 @@ def default_sigma_decay_function(sigma_0, sigma_decay_rate, batch):
   """
   return (sigma_0) / (1 + batch * sigma_decay_rate)
 
-def weights_initialize(data, n_rows, n_cols, method = 'random'):
+def weights_initialize(data, n_rows, n_cols, method='random', random_state=None):
   """Function to initialize weights of neurons.
   
   Parameters
@@ -75,10 +75,12 @@ def weights_initialize(data, n_rows, n_cols, method = 'random'):
   if method not in ['random', 'sample', 'pca']:
     raise Exception('No method specified')
 
+  np.random.seed(random_state)
   weights = np.random.rand(n_nodes, n_features)
 
   if method == 'sample':
     for i in range (n_nodes):
+      np.random.seed(random_state)
       rand_idx = np.random.randint(0, n_samples)
       weights[i] = data[rand_idx].copy()
   elif method == 'pca':
