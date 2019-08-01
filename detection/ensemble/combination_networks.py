@@ -26,8 +26,6 @@ class CombinationSomLvqNetworks(CombinationNetworksBase):
       self._models.append(CombineSomLvq(n_rows=size_of_estimator, 
                                         n_cols=size_of_estimator,
                                         random_state=self._get_random_state()))
-    for m in self._models:
-      print(m._random_state)
 
   def fit(self, X, y, subset_size = 0.25, weights_init = None, labels_init = None,
           unsup_num_iters = 100, unsup_batch_size = 32,
