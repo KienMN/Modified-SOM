@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.cluster import k_means
 from .base import CompetitiveNetwork
 from .utils import default_learning_rate_decay_function
 from .utils import default_sigma_decay_function
@@ -28,8 +29,8 @@ class SOM(CompetitiveNetwork):
     Bias of each neurons that is used in conscience.
   """
 
-  def __init__(self, n_rows, n_cols):
-    super().__init__(n_rows, n_cols)
+  def __init__(self, n_rows, n_cols, random_state=None):
+    super().__init__(n_rows, n_cols, random_state)
     self._competitive_layer_weights = None
     self._n_batches = 0
     self._quantization_error = np.array([])
@@ -97,6 +98,7 @@ class SOM(CompetitiveNetwork):
     n_samples = X.shape[0]
     verbose = self._verbose
     for i in range(num_iters):
+      np.random.seed(self._get_random_state())
       sample_idx = np.random.randint(0, n_samples)
       x = X[sample_idx]
       n_batches = self._n_batches + i // batch_size
@@ -143,10 +145,11 @@ class SOM(CompetitiveNetwork):
       self._bias[winning_node_idx] += 0.1
       self._bias[winning_node_idx + 1:] *= 0.9
     
-  def fit(self, X, weights_init = 'random', num_iters = 100, batch_size = 32, neighborhood = "bubble",
-          learning_rate = 0.5, learning_decay_rate = 1, learning_rate_decay_function = None,
-          sigma = 1, sigma_decay_rate = 1, sigma_decay_function = None,
-          conscience = False, verbose = False):
+  def fit(self, X, weights_init = 'random', num_iters = 100, batch_size = 32, 
+          neighborhood = "bubble", learning_rate = 0.5, learning_decay_rate = 1, 
+          learning_rate_decay_function = None, sigma = 1, sigma_decay_rate = 1, 
+          sigma_decay_function = None, conscience = False, num_clusters = 0,
+          verbose = False):
     """Fit the model according to the input data.
     
     Parameters
@@ -202,11 +205,17 @@ class SOM(CompetitiveNetwork):
       if weights_init in ['random','sample', 'pca']:
         if verbose:
           print('Using {} initialization for neurons\' weights.'.format(weights_init))
-        self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = weights_init)
+        self._competitive_layer_weights = weights_initialize(X, self._n_rows, 
+                                                             self._n_cols, 
+                                                             method=weights_init,
+                                                             random_state=self._get_random_state())
       else:
         if verbose:
           print('No weights init specified, using random initialization instead.')
-        self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = 'random')  
+        self._competitive_layer_weights = weights_initialize(X, self._n_rows, 
+                                                             self._n_cols, 
+                                                             method='random',
+                                                             random_state=self._get_random_state())  
     
     self._initial_learning_rate = learning_rate
     self._learning_decay_rate = learning_decay_rate
@@ -228,11 +237,19 @@ class SOM(CompetitiveNetwork):
       self._sigma_decay_function = default_sigma_decay_function
 
     self.unsup_fitting(X, num_iters, batch_size)
+
+    if num_clusters != 0:
+      _, self.cluster_label, _ = k_means(self._competitive_layer_weights, 
+                                         n_clusters=num_clusters, 
+                                         verbose=verbose, 
+                                         random_state=self._get_random_state())
+
     return self
 
   def predict(self, X):
-    """Unsupervised learning model has no predict method."""
-    pass
+    pred = np.array([self.cluster_label[self.find_nearest_node(x)] for x in X])
+
+    return pred
 
   def quantization_error(self, X):
     """
@@ -282,8 +299,8 @@ class CombineSomLvq(SOM):
     Label of each neurons.
   """
 
-  def __init__(self, n_rows, n_cols):
-    super().__init__(n_rows, n_cols)
+  def __init__(self, n_rows, n_cols, random_state=None):
+    super().__init__(n_rows, n_cols, random_state)
     self._initial_learning_rate = None
     self._initial_sigma = None
     self._learning_decay_rate = None
@@ -344,6 +361,7 @@ class CombineSomLvq(SOM):
     n_samples = X.shape[0]
     verbose = self._verbose
     for i in range(num_iters):
+      np.random.seed(self._get_random_state())
       sample_idx = np.random.randint(0, n_samples)
       x = X[sample_idx]
       y_i = y[sample_idx]
@@ -476,11 +494,17 @@ class CombineSomLvq(SOM):
       if weights_init in ['random','sample', 'pca']:
         if verbose:
           print('Using {} initialization for neurons\' weights.'.format(weights_init))
-        self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = weights_init)
+        self._competitive_layer_weights = weights_initialize(X, self._n_rows, 
+                                                             self._n_cols, 
+                                                             method=weights_init,
+                                                             random_state=self._get_random_state())
       else:
         if verbose:
           print('No weights init specified, using random initialization instead.')
-        self._competitive_layer_weights = weights_initialize(X, self._n_rows, self._n_cols, method = 'random')
+        self._competitive_layer_weights = weights_initialize(X, self._n_rows, 
+                                                             self._n_cols, 
+                                                             method='random',
+                                                             random_state=self._get_random_state())
 
     if learning_rate is not None:
       self._initial_learning_rate = learning_rate

@@ -20,10 +20,12 @@ class CombinationSomLvqNetworks(CombinationNetworksBase):
     List of models in combination.
   """
   
-  def __init__(self, n_estimators, size_of_estimator):
-    super().__init__(n_estimators, size_of_estimator)
+  def __init__(self, n_estimators, size_of_estimator, random_state=None):
+    super().__init__(n_estimators, size_of_estimator, random_state=random_state)
     for _ in range (n_estimators):
-      self._models.append(CombineSomLvq(n_rows = size_of_estimator, n_cols = size_of_estimator))
+      self._models.append(CombineSomLvq(n_rows=size_of_estimator, 
+                                        n_cols=size_of_estimator,
+                                        random_state=self._get_random_state()))
 
   def fit(self, X, y, subset_size = 0.25, weights_init = None, labels_init = None,
           unsup_num_iters = 100, unsup_batch_size = 32,
@@ -99,6 +101,7 @@ class CombinationSomLvqNetworks(CombinationNetworksBase):
     """
     n_samples = X.shape[0]
     for i, model in enumerate(self._models):
+      np.random.seed(self._get_random_state())
       subset_idx = np.random.randint(0, n_samples, int(subset_size * n_samples))
       X_subset = X[subset_idx]
       y_subset = y[subset_idx]
@@ -180,10 +183,12 @@ class DistributionSomLvqNetworks(CombinationNetworksBase):
   _features_set : list
     List of features using for each models.
   """
-  def __init__(self, n_estimators, size_of_estimator):
-    super().__init__(n_estimators, size_of_estimator)
+  def __init__(self, n_estimators, size_of_estimator, random_state=None):
+    super().__init__(n_estimators, size_of_estimator, random_state=random_state)
     for _ in range (n_estimators):
-      self._models.append(CombineSomLvq(n_rows = size_of_estimator, n_cols = size_of_estimator))
+      self._models.append(CombineSomLvq(n_rows=size_of_estimator, 
+                                        n_cols=size_of_estimator,
+                                        random_state=self._get_random_state()))
 
   def fit(self, X, y, features_selection = 'random', subset_size = 1,
           weights_init = None, labels_init = None,
@@ -267,19 +272,24 @@ class DistributionSomLvqNetworks(CombinationNetworksBase):
     
     if features_selection == 'random':
       for _ in range(self._n_estimators):
-        subset_features = np.random.randint(0, n_features, np.random.randint(1, n_features + 1))
+        np.random.seed(self._get_random_state())
+        size = np.random.randint(1, n_features + 1)
+        np.random.seed(self._get_random_state())
+        subset_features = np.random.randint(0, n_features, size)
         subset_features = np.unique(subset_features)
         self._features_set.append(subset_features)
     elif features_selection == 'weights':
       corr_coef = np.corrcoef(np.append(X, y.reshape((-1, 1)), axis = 1).T)[-1, :-1]
       weights = np.abs(corr_coef.copy())
       for _ in range(self._n_estimators):  
-        subset_features = np.unique(weighted_sampling(weights, n_features))
+        subset_features = np.unique(weighted_sampling(weights, n_features, 
+                                                      self._get_random_state()))
         self._features_set.append(subset_features)
     elif type(features_selection) == list and n_features == len(features_selection):
       weights = np.abs(np.array(features_selection))
       for _ in range(self._n_estimators):
-        subset_features = np.unique(weighted_sampling(weights, n_features))
+        subset_features = np.unique(weighted_sampling(weights, n_features, 
+                                                      self._get_random_state()))
         self._features_set.append(subset_features)
     else:
       raise ValueError('features_selection should be random or weights or a list which length is equal to number of features')
@@ -288,6 +298,7 @@ class DistributionSomLvqNetworks(CombinationNetworksBase):
       if verbose:
         print('Model {}/{}:'.format(i + 1, self._n_estimators))
       if subset_size != 1:
+        np.random.seed(self._get_random_state())
         subset_idx = np.random.randint(0, n_samples, int(subset_size * n_samples)).tolist()
       else:
         subset_idx = np.arange(n_samples)
