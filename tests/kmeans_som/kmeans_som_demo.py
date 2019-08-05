@@ -36,7 +36,7 @@ y_train = encoder.fit_transform(y_train)
 # Training the LVQ
 from detection.competitive_learning import SOM
 model = SOM(n_rows=3, n_cols=3, random_state=random_state)
-model.fit(X_train, weights_init= "pca",num_iters=100, batch_size=32, 
+model.fit(X_train, None, weights_init= "pca",num_iters=100, batch_size=32, 
           neighborhood="gaussian", learning_rate=0.75, learning_decay_rate=1, 
           learning_rate_decay_function=None, sigma=1, sigma_decay_rate=1, 
           sigma_decay_function=None, conscience=False, num_clusters=4, 
@@ -48,7 +48,7 @@ pred = model.predict(X_train)
 print(pred)
 
 model_clone = SOM(n_rows=3, n_cols=3, random_state=random_state)
-model_clone.fit(X_train, weights_init= "pca",num_iters=100, batch_size=32, 
+model_clone.fit(X_train, None, weights_init= "pca",num_iters=100, batch_size=32, 
                 neighborhood="gaussian", learning_rate=0.75, learning_decay_rate=1, 
                 learning_rate_decay_function=None, sigma=1, sigma_decay_rate=1, 
                 sigma_decay_function=None, conscience=False, num_clusters=4, 

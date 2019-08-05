@@ -145,7 +145,7 @@ class SOM(CompetitiveNetwork):
       self._bias[winning_node_idx] += 0.1
       self._bias[winning_node_idx + 1:] *= 0.9
     
-  def fit(self, X, weights_init = 'random', num_iters = 100, batch_size = 32, 
+  def fit(self, X, dummy_for_y, weights_init = 'random', num_iters = 100, batch_size = 32, 
           neighborhood = "bubble", learning_rate = 0.5, learning_decay_rate = 1, 
           learning_rate_decay_function = None, sigma = 1, sigma_decay_rate = 1, 
           sigma_decay_function = None, conscience = False, num_clusters = 0,
